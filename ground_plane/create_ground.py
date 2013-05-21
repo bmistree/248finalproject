@@ -3,16 +3,27 @@
 import random
 import sys
 
-SOUTHWEST_X = 0
-SOUTHWEST_Z = 0
+SOUTHWEST_X = -50
+SOUTHWEST_Z = -100
+
+SOUTHWEST_VERTEX_NUM = 1
+SOUTHEAST_VERTEX_NUM = 2
+NORTHEAST_VERTEX_NUM = 3
+NORTHWEST_VERTEX_NUM = 4
+
 
 class Square(object):
     NOISE_FACTOR_MULTIPLIER = .8
-    MIN_TESSEL_SIDE_LEN = 15
+    MIN_TESSEL_SIDE_LEN = 5
     static_vertex_number = 1
 
+    # dict of dicts.  first index is x position, second index is z
+    # position, value is vertex number to use
+    static_point_dict = {}
+    
     
     def __init__(self,northwest,northeast,southwest,southeast,factor):
+        # height of each of these
         self.northwest = northwest
         self.northeast = northeast
         self.southeast = southeast
@@ -58,36 +69,63 @@ class Square(object):
         
         
         # southwest vertex
-        print ('v %s %s %s' %
-               (str(southwest_x),str(self.southwest),
-                str(southwest_z)))
+        if ((southwest_x in Square.static_point_dict) and
+            (southwest_z in Square.static_point_dict[southwest_x])):
+            self.southwest_vertex_num = Square.static_point_dict[southwest_x][southwest_z]
+        else:
+            print ('v %s %s %s' %
+                   (str(southwest_x),str(self.southwest),
+                    str(southwest_z)))
 
-        self.southwest_vertex_num = Square.static_vertex_number
-        Square.static_vertex_number += 1
+            self.southwest_vertex_num = Square.static_vertex_number
+            if southwest_x not in Square.static_point_dict:
+                Square.static_point_dict[southwest_x] = {}
+            Square.static_point_dict[southwest_x][southwest_z] = self.southwest_vertex_num
+            Square.static_vertex_number += 1
 
         # southeast vertex
-        print ('v %s %s %s' %
-               (str(southeast_x),str(self.southeast),
-                str(southeast_z)))
-        
-        self.southeast_vertex_num = Square.static_vertex_number
-        Square.static_vertex_number += 1
+        if ((southeast_x in Square.static_point_dict) and
+            (southeast_z in Square.static_point_dict[southeast_x])):
+            self.southeast_vertex_num = Square.static_point_dict[southeast_x][southeast_z]
+        else:
+            print ('v %s %s %s' %
+                   (str(southeast_x),str(self.southeast),
+                    str(southeast_z)))
+            self.southeast_vertex_num = Square.static_vertex_number
+            if southeast_x not in Square.static_point_dict:
+                Square.static_point_dict[southeast_x] = {}            
+            Square.static_point_dict[southeast_x][southeast_z] = self.southeast_vertex_num            
+            Square.static_vertex_number += 1
 
         # northwest vertex
-        print ('v %s %s %s' %
-               (str(northwest_x),str(self.northwest),
-                str(northwest_z)))
-        
-        self.northwest_vertex_num = Square.static_vertex_number
-        Square.static_vertex_number += 1
+        if ((northwest_x in Square.static_point_dict) and
+            (northwest_z in Square.static_point_dict[northwest_x])):
+            self.northwest_vertex_num = Square.static_point_dict[northwest_x][northwest_z]
+        else:        
+            print ('v %s %s %s' %
+                   (str(northwest_x),str(self.northwest),
+                    str(northwest_z)))
+
+            self.northwest_vertex_num = Square.static_vertex_number
+            if northwest_x not in Square.static_point_dict:
+                Square.static_point_dict[northwest_x] = {}
+            Square.static_point_dict[northwest_x][northwest_z] = self.northwest_vertex_num
+            Square.static_vertex_number += 1
 
         # northeast vertex
-        print ('v %s %s %s' %
-               (str(northeast_x),str(self.northeast),
-                str(northeast_z)))
+        if ((northeast_x in Square.static_point_dict) and
+            (northeast_z in Square.static_point_dict[northeast_x])):
+            self.northeast_vertex_num = Square.static_point_dict[northeast_x][northeast_z]
+        else:
+            print ('v %s %s %s' %
+                   (str(northeast_x),str(self.northeast),
+                    str(northeast_z)))
         
-        self.northeast_vertex_num = Square.static_vertex_number
-        Square.static_vertex_number += 1
+            self.northeast_vertex_num = Square.static_vertex_number
+            if northeast_x not in Square.static_point_dict:
+                Square.static_point_dict[northeast_x] = {}
+            Square.static_point_dict[northeast_x][northeast_z] = self.northeast_vertex_num
+            Square.static_vertex_number += 1
         
 
     def partition(self):
@@ -143,13 +181,34 @@ class Square(object):
     def obj_face_export(self):
         if self.num_children_levels == 0:
             # we're at a leaf tessel.  export as single face.
-            print (
-                'f %s %s %s %s' % (
-                    str(self.southwest_vertex_num),
-                    str(self.southeast_vertex_num),
-                    str(self.northeast_vertex_num),
-                    str(self.northwest_vertex_num)))
+            # print (
+            #     'f %s/%s %s/%s %s/%s %s/%s' % (
+            #         str(self.southwest_vertex_num),
+            #         str(SOUTHWEST_VERTEX_NUM),
+                    
+            #         str(self.southeast_vertex_num),
+            #         str(SOUTHEAST_VERTEX_NUM),
+                    
+            #         str(self.northeast_vertex_num),
+            #         str(NORTHEAST_VERTEX_NUM),
+                    
+            #         str(self.northwest_vertex_num),
+            #         str(NORTHWEST_VERTEX_NUM)))
 
+            print (
+                'f %s/%s %s/%s %s/%s %s/%s' % (
+                    str(self.southeast_vertex_num),
+                    str(SOUTHEAST_VERTEX_NUM),
+                    
+                    str(self.southwest_vertex_num),
+                    str(SOUTHWEST_VERTEX_NUM),
+                    
+                    str(self.northwest_vertex_num),
+                    str(NORTHWEST_VERTEX_NUM),
+                    
+                    str(self.northeast_vertex_num),
+                    str(NORTHEAST_VERTEX_NUM)))
+            
             return 
             
         self.northwest_square.obj_face_export()
@@ -157,7 +216,17 @@ class Square(object):
         self.southwest_square.obj_face_export()
         self.southeast_square.obj_face_export()
             
+    def export_texture_coords(self):
+        # southwest
+        print 'vt 0.0 0.0 0.0'
+        # southeast
+        print 'vt 1.0 0.0 0.0'
+        # northeast
+        print 'vt 1.0 1.0 0.0'
+        # northwest
+        print 'vt 0.0 1.0 0.0'
 
+        
 def run(
     num_steps,initial_northwest,initial_northeast,
     initial_southwest,initial_southeast,noise_factor):
@@ -167,6 +236,7 @@ def run(
         initial_southeast,noise_factor)
     parent_square.refine_children(num_steps)
     parent_square.obj_vertex_export(SOUTHWEST_X,SOUTHWEST_Z)
+    parent_square.export_texture_coords()
     parent_square.obj_face_export()
 
     
@@ -174,8 +244,10 @@ if __name__ == '__main__':
     if len(sys.argv) == 1:
         initial_val = .5
         noise_factor = .9
-        # run(3, initial_val,initial_val,initial_val,initial_val,noise_factor)
-        run(5, initial_val,initial_val,initial_val,initial_val,noise_factor)
+        # run(1, initial_val,initial_val,initial_val,initial_val,noise_factor)
+        # run(2, initial_val,initial_val,initial_val,initial_val,noise_factor)
+        # run(5, initial_val,initial_val,initial_val,initial_val,noise_factor)
+        run(7, initial_val,initial_val,initial_val,initial_val,noise_factor)
     else:
         run(
             sys.argv[1],sys.argv[2],sys.argv[3],
