@@ -6,6 +6,23 @@
         
     <script type="text/javascript" src="lib/three.js">
     </script>
+
+    <script type="text/javascript" src="lib/postprocessing/CopyShader.js">
+    </script>
+    <script type="text/javascript" src="lib/postprocessing/EffectComposer.js">
+    </script>
+    <script type="text/javascript" src="lib/postprocessing/RenderPass.js">
+    </script>    
+    <script type="text/javascript" src="lib/postprocessing/ShaderPass.js">
+    </script>    
+    <script type="text/javascript" src="lib/postprocessing/MaskPass.js"></script> 
+
+    <script type="text/javascript" src="lib/shaders/ConvolutionShader.js"></script> 
+
+    <script type="text/javascript" src="lib/postprocessing/BloomPass.js"></script> 
+
+    <script type="text/javascript" src="lib/sound.js"></script>
+    
     <script type="text/javascript" src="lib/plant/particle_stream.js">
     </script>
     <script type="text/javascript" src="lib/plant/growth_particles.js">
@@ -26,6 +43,10 @@
   
   <body>
     <div id="pos_box_div"></div>
-    
+    <audio id="background_audio" src="data/shimmer.wav" preload="auto"
+    autoplay loop></audio>
+
+    <audio id="electric_audio" src="data/electricity_1.wav" preload="auto"></audio>
+    <!-- <audio id="electric_audio" src="data/real_electric.mp3" preload="auto"></audio> -->
   </body>
 </html>
