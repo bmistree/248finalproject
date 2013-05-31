@@ -58,10 +58,16 @@ class Square(object):
     NOISE_FACTOR_MULTIPLIER = .99
     MIN_TESSEL_SIDE_LEN = 5
     static_vertex_number = 1
-
+    
     # dict of dicts.  first index is x position, second index is z
     # position, value is vertex number to use
     static_point_dict = {}
+
+    static_texture_number = 1
+    # dict of dicts.  first index is x position, second index is z
+    # position.  value is vertex texture number.
+    static_texture_dict = {}
+    
     
     
     def __init__(self,northwest,northeast,southwest,southeast,noise_factor):
@@ -84,13 +90,91 @@ class Square(object):
         self.northeast_vertex_num = None
 
         self.num_children_levels = 0
+
+    def texture_coord_export(self,original_southwest_x,original_southwest_z,southwest_x, southwest_z):
+        if self.num_children_levels != 0:
+            dist_to_next_square = (
+                self.MIN_TESSEL_SIDE_LEN * (2 ** (self.num_children_levels -1)))
+            
+            self.northwest_square.texture_coord_export(
+                original_southwest_x,original_southwest_z,
+                southwest_x, southwest_z + dist_to_next_square)
+            self.northeast_square.texture_coord_export(
+                original_southwest_x,original_southwest_z,                
+                southwest_x + dist_to_next_square, southwest_z + dist_to_next_square)
+            self.southwest_square.texture_coord_export(
+                original_southwest_x,original_southwest_z,
+                southwest_x,southwest_z)
+            self.southeast_square.texture_coord_export(
+                original_southwest_x,original_southwest_z,
+                southwest_x + dist_to_next_square, southwest_z)
+
+            return
+
+        southwest_x_in_tiles = (southwest_x - original_southwest_x)/self.MIN_TESSEL_SIDE_LEN
+        southwest_z_in_tiles = (southwest_z - original_southwest_z)/self.MIN_TESSEL_SIDE_LEN
+        self.southwest_uv_num = self.get_uv_num(southwest_x_in_tiles,southwest_z_in_tiles)
         
+        southeast_x_in_tiles = southwest_x_in_tiles + 1
+        southeast_z_in_tiles = southwest_z_in_tiles
+        self.southeast_uv_num = self.get_uv_num(southeast_x_in_tiles,southeast_z_in_tiles)
+        
+        northeast_x_in_tiles = southwest_x_in_tiles + 1
+        northeast_z_in_tiles = southwest_z_in_tiles + 1
+        self.northeast_uv_num = self.get_uv_num(northeast_x_in_tiles,northeast_z_in_tiles)
+
+        northwest_x_in_tiles = southwest_x_in_tiles
+        northwest_z_in_tiles = southwest_z_in_tiles + 1
+        self.northwest_uv_num = self.get_uv_num(northwest_x_in_tiles,northwest_z_in_tiles)
+
+
+    def get_uv_num(self,x_tile_coord,z_tile_coord):
+        '''
+        Prints texture coordinate if do not have one for this already.
+        Otherwise, just fetches appropriate texture number
+        
+        @param {int} x_tile_coord,z_tile_coord --- If we drew a 2d
+        grid and each tile had a side length of 1, then these would be
+        the x,y coordinates for the tile
+        '''
+        if x_tile_coord not in Square.static_texture_dict:
+            Square.static_texture_dict[x_tile_coord] = {}
+
+        if z_tile_coord not in Square.static_texture_dict[x_tile_coord]:
+            print 'vt %s.0 %s.0' % (str(x_tile_coord),str(z_tile_coord))
+            Square.static_texture_dict[x_tile_coord][z_tile_coord] = Square.static_texture_number
+            Square.static_texture_number += 1
+
+        return Square.static_texture_dict[x_tile_coord][z_tile_coord]
+
+    
     def obj_vertex_export(self,southwest_x, southwest_z):
 
         if self.num_children_levels != 0:
             dist_to_next_square = (
                 self.MIN_TESSEL_SIDE_LEN * (2 ** (self.num_children_levels -1)))
+            
+            self.northwest_square.obj_vertex_export(
+                southwest_x, southwest_z + dist_to_next_square)
+            self.northeast_square.obj_vertex_export(
+                southwest_x + dist_to_next_square, southwest_z + dist_to_next_square)
+            self.southwest_square.obj_vertex_export(southwest_x,southwest_z)
+            self.southeast_square.obj_vertex_export(
+                southwest_x + dist_to_next_square, southwest_z)
 
+            return
+        
+        northwest_x = southwest_x
+        northwest_z = southwest_z + self.MIN_TESSEL_SIDE_LEN
+        southeast_x = southwest_x + self.MIN_TESSEL_SIDE_LEN
+        southeast_z = southwest_z 
+        northeast_x = southwest_x + self.MIN_TESSEL_SIDE_LEN
+        northeast_z = southwest_z + self.MIN_TESSEL_SIDE_LEN
+
+        
+        if self.num_children_levels != 0:
+            dist_to_next_square = (
+                self.MIN_TESSEL_SIDE_LEN * (2 ** (self.num_children_levels -1)))
             
             self.northwest_square.obj_vertex_export(
                 southwest_x, southwest_z + dist_to_next_square)
@@ -109,12 +193,11 @@ class Square(object):
         northeast_x = southwest_x + self.MIN_TESSEL_SIDE_LEN
         northeast_z = southwest_z + self.MIN_TESSEL_SIDE_LEN
         
-        
         # southwest vertex
         if ((southwest_x in Square.static_point_dict) and
             (southwest_z in Square.static_point_dict[southwest_x])):
             self.southwest_vertex_num = Square.static_point_dict[southwest_x][southwest_z].get_vertex_num()
-            self.southwest_element = Square.static_point_dict[southwest_x][southwest_z]            
+            self.southwest_element = Square.static_point_dict[southwest_x][southwest_z]
         else:
             print ('v %s %s %s' %
                    (str(southwest_x),str(self.southwest),
@@ -271,38 +354,24 @@ class Square(object):
     def obj_face_export(self):
         if self.num_children_levels == 0:
             # we're at a leaf tessel.  export as single face.
-            # print (
-            #     'f %s/%s %s/%s %s/%s %s/%s' % (
-            #         str(self.southwest_vertex_num),
-            #         str(SOUTHWEST_VERTEX_NUM),
-                    
-            #         str(self.southeast_vertex_num),
-            #         str(SOUTHEAST_VERTEX_NUM),
-                    
-            #         str(self.northeast_vertex_num),
-            #         str(NORTHEAST_VERTEX_NUM),
-                    
-            #         str(self.northwest_vertex_num),
-            #         str(NORTHWEST_VERTEX_NUM)))
-
             print (
                 'f %s/%s/%s %s/%s/%s %s/%s/%s %s/%s/%s' % (
                     str(self.southeast_vertex_num),
-                    str(SOUTHEAST_VERTEX_NUM),
+                    str(self.southeast_uv_num),
                     str(self.southeast_element.vertex_normal_num),
                     
                     str(self.southwest_vertex_num),
-                    str(SOUTHWEST_VERTEX_NUM),
+                    str(self.southwest_uv_num),
                     str(self.southwest_element.vertex_normal_num),                    
                     
                     str(self.northwest_vertex_num),
-                    str(NORTHWEST_VERTEX_NUM),
+                    str(self.northwest_uv_num),
                     str(self.northwest_element.vertex_normal_num),
                     
                     str(self.northeast_vertex_num),
-                    str(NORTHEAST_VERTEX_NUM),
+                    str(self.northeast_uv_num),
                     str(self.northeast_element.vertex_normal_num)))
-            
+
             return 
             
         self.northwest_square.obj_face_export()
@@ -310,15 +379,15 @@ class Square(object):
         self.southwest_square.obj_face_export()
         self.southeast_square.obj_face_export()
             
-    def export_texture_coords(self):
-        # southwest
-        print 'vt 0.0 0.0 0.0'
-        # southeast
-        print 'vt 1.0 0.0 0.0'
-        # northeast
-        print 'vt 1.0 1.0 0.0'
-        # northwest
-        print 'vt 0.0 1.0 0.0'
+    # def export_texture_coords(self):
+    #     # southwest
+    #     print 'vt 0.0 0.0 0.0'
+    #     # southeast
+    #     print 'vt 1.0 0.0 0.0'
+    #     # northeast
+    #     print 'vt 1.0 1.0 0.0'
+    #     # northwest
+    #     print 'vt 0.0 1.0 0.0'
 
     def export_vertex_normals(self):
         for inner_dict in Square.static_point_dict.values():
@@ -335,7 +404,8 @@ def run(
         initial_southeast,noise_factor)
     parent_square.refine_children(num_steps)
     parent_square.obj_vertex_export(SOUTHWEST_X,SOUTHWEST_Z)
-    parent_square.export_texture_coords()
+    parent_square.texture_coord_export(SOUTHWEST_X,SOUTHWEST_Z,SOUTHWEST_X,SOUTHWEST_Z)
+    #parent_square.export_texture_coords()
     parent_square.calculate_normals()
     parent_square.export_vertex_normals()
     parent_square.obj_face_export()

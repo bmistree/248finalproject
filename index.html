@@ -77,8 +77,8 @@
           fogFactor = 1.0 - clamp( fogFactor, 0.0, 1.0 );
       
           vec2 large_texture_vuv;
-          large_texture_vuv.x = mod(vUv.x/ LOG2,1.0);
-          large_texture_vuv.y = mod(vUv.y/ LOG2,1.0);
+          large_texture_vuv.x = mod(vUv.x/ (5.0 * LOG2),1.0);
+          large_texture_vuv.y = mod(vUv.y/ (5.0 * LOG2),1.0);      
           vec4 large_color = texture2D(text1,large_texture_vuv);
       
           vec2 small_texture_vuv;
@@ -86,7 +86,7 @@
           small_texture_vuv.y = mod(vUv.y,1.0);      
           vec4 small_color = texture2D(text1, small_texture_vuv);
                 
-          gl_FragColor = mix(large_color,small_color,.5);
+          gl_FragColor = mix(large_color,small_color,0.5);
           gl_FragColor = mix( gl_FragColor, vec4( fog_color, gl_FragColor.w ), fogFactor );
       }
     </script>
