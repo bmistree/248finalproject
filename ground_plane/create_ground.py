@@ -4,8 +4,12 @@ import random
 import sys
 import math
 
-SOUTHWEST_X = -50
-SOUTHWEST_Z = -100
+# SOUTHWEST_X = -50
+# SOUTHWEST_Z = -100
+
+SOUTHWEST_X = 0
+SOUTHWEST_Z = 0
+
 
 SOUTHWEST_VERTEX_NUM = 1
 SOUTHEAST_VERTEX_NUM = 2
