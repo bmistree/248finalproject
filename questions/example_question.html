@@ -1,9 +1,41 @@
 <html>
   <head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="qlibs/jquery-1.9.0.js">
+    </script>
+    <script type="text/javascript" src="qlibs/jquery-postmessage.js">
+    </script>
+    <script type="text/javascript" src="qlibs/qmessager.js">
+    </script>    
+
+    
   </head>
 
   <body>
-    Asking some question.
+    What is 3x2?
+    <input type="text" id="solution"></input>
+    <br/>
+    <button id="sol-button">Submit</button>
+    
+    <script>
+      $("#sol-button").click(
+      function()
+      {
+         var sol_text = $("#solution").val();
+         try
+         {
+              var sol_float = parseFloat(sol_text);
+              if (sol_float == 6)
+                  close_message(20);
+         }
+         catch(e){}
+         finally
+         {
+             close_message(0);
+         }
+      });
+
+    </script>
   </body>
 </html>
   
