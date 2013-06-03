@@ -33,14 +33,12 @@
     </script>
     <script type="text/javascript" src="lib/manage_trees.js">
     </script>
-    
+
+    <script type="text/javascript" src="lib/door_manager.js">
+    </script>
     
     <script type="text/javascript" src="lib/setup.js">
     </script>
-
-    <script type="text/javascript" src="lib/door.js">
-    </script>
-
     
     <script>
       $(document).ready(drawing_init);
@@ -90,7 +88,7 @@
       }
     </script>
     
-    <script id="fragmentShader" type="x-shader/x-fragment">
+    <script id="door-fragment-shader" type="x-shader/x-fragment">
 
             uniform float time;
             uniform vec2 resolution;
@@ -140,21 +138,17 @@
 
     </script>
 
-        <script id="vertexShader" type="x-shader/x-vertex">
-
-                uniform vec2 uvScale;
-                varying vec2 vUv;
-
-                void main()
-                {
-
-                        vUv = uvScale * uv;
-                        vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-                        gl_Position = projectionMatrix * mvPosition;
-
-                }
-
-        </script>
+    <script id="door-vertex-shader" type="x-shader/x-vertex">
+      uniform vec2 uvScale;
+      varying vec2 vUv;
+      
+      void main()
+      {
+          vUv = uvScale * uv;
+          vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+          gl_Position = projectionMatrix * mvPosition;
+      }
+    </script>
 
     
   </body>
