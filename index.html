@@ -34,6 +34,7 @@
     <script src="lib/postprocessing/MaskPass.js"></script>
     <script src="lib/postprocessing/RenderPass.js"></script>
 
+    <script src="lib/postprocessing/BloomPass.js"></script>
     <script src="lib/shaders/HorizontalBlurShader.js"></script>
     <script src="lib/shaders/VerticalBlurShader.js"></script>
     <script src="lib/shaders/AdditiveBlendShader.js"></script>
@@ -110,7 +111,9 @@
           gl_FragColor = mix( gl_FragColor, vec4( fog_color, gl_FragColor.w ), fogFactor );
       }
     </script>
-    
+
+    <!-- Code only minorly modified from: -->
+    <!-- http://threejs.org/examples/webgl_shader_lava.html -->
     <script id="door-fragment-shader" type="x-shader/x-fragment">
 
             uniform float time;
