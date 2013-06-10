@@ -2,14 +2,14 @@
     
     {
         "type": "door",
-        "pos": {"x": 0,"y":0,"z":-5},
+        "pos": {"x": 50,"y":-1,"z":35},
         "door_url": "questions/example_question.html"
     },
 
     {
         "type": "door",
-        "pos": {"x": 0,"y":0,"z":20},
-        "door_url": "questions/example_question.html"        
+        "pos": {"x": 40,"y":-1,"z":20},
+        "door_url": "questions/other_example_question.html"        
     },
 
     {
